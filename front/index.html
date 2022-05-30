@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="style.css">
+	<title>Document</title>
+</head>
+<body>
+	<div class="addUser">
+		<input type="text" name="name" data-error="Ошибка" data-value="name" class="input">
+		<button type="submit" data-action="add">Add user</button>
+	</div>
+
+	<div class="deleteUser">
+		<input type="number" name="id" data-error="Ошибка" data-value="id" class="input">
+		<button type="submit" data-action="delete">Delete user</button>
+	</div>
+
+	<div class="editUser">
+		<input type="number" name="edit" data-error="Ошибка" data-value="edit" class="input">
+		<label for="editName">Edit User Name</label>
+		<input id="editName" type="text" name="name" data-error="Ошибка" data-value="edit" class="input">
+		<label for="editAge">Edit User Age</label>
+		<input id="editAge" type="number" name="age" data-error="Ошибка" data-value="edit" class="input">
+		<button type="submit" data-action="edit">Edit user</button>
+	</div>
+	
+	<script src="index.js"></script>
+</body>
+</html>
