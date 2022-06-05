@@ -8,25 +8,32 @@
 	<title>Document</title>
 </head>
 <body>
-	<div class="addUser">
-		<input type="text" name="name" data-error="Ошибка" data-value="name" class="input">
-		<button type="submit" data-action="add">Add user</button>
-	</div>
-
-	<div class="deleteUser">
-		<input type="number" name="id" data-error="Ошибка" data-value="id" class="input">
-		<button type="submit" data-action="delete">Delete user</button>
-	</div>
-
-	<div class="editUser">
-		<input type="number" name="edit" data-error="Ошибка" data-value="edit" class="input">
-		<label for="editName">Edit User Name</label>
-		<input id="editName" type="text" name="name" data-error="Ошибка" data-value="edit" class="input">
-		<label for="editAge">Edit User Age</label>
-		<input id="editAge" type="number" name="age" data-error="Ошибка" data-value="edit" class="input">
-		<button type="submit" data-action="edit">Edit user</button>
-	</div>
+	<div class="actions">
+		<div class="addUser">
+			<input type="text" name="name" data-error="Ошибка" data-value="name" class="input">
+			<button type="submit" data-action="add">Add user</button>
+		</div>
 	
-	<script src="index.js"></script>
+		<div class="deleteUser">
+			<input type="number" name="id" data-error="Ошибка" data-value="id" class="input">
+			<button type="submit" data-action="delete">Delete user</button>
+		</div>
+	
+		<div class="editUser">
+			<label for="editId">Edit User ID</label>
+			<input id="editId" type="number" name="editId" data-error="Ошибка" data-value="editId" class="input">
+			<label for="editName">Edit User Name</label>
+			<input id="editName" type="text" name="name" data-error="Ошибка" data-value="edit" class="input">
+			<label for="editAge">Edit User Age</label>
+			<input id="editAge" type="number" name="age" data-error="Ошибка" data-value="edit" class="input">
+			<button type="submit" data-action="edit">Edit user</button>
+		</div>
+	</div>
+
+	<div class="list" data-root="listRoot"></div>
+
+	<div class="pagination" data-root="paginationRoot"></div>
+	
+	<script src="index.js" type="module"></script>
 </body>
 </html>

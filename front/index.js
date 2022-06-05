@@ -1,8 +1,17 @@
+import Pagination from "./Classes/Pagination.js";
+
 const add = document.querySelector('button[data-action="add"]');
 const del = document.querySelector('button[data-action="delete"]');
 const edit = document.querySelector('button[data-action="edit"]');
-
 const urlUsers = new URL('http://localHost:3000/users');
+
+const urlUsersSearch = new URL('http://localHost:3000/users');
+urlUsersSearch.searchParams.set('limit', 2);
+
+const getRandomAge = () => Math.round(10 + (Math.random() * 70));
+
+initUsers('[data-root="listRoot"]');
+getUsersCount();
 
 function getUsersCount() {
 	const xhrG = new XMLHttpRequest();
@@ -12,25 +21,35 @@ function getUsersCount() {
 	xhrG.open('GET', urlUsersCount);
 
 	xhrG.onload = () => {
-		console.log(xhrG.response.count);
+
+		const pagination = new Pagination(
+			document.querySelector('[data-root="paginationRoot"]'),
+			Math.ceil(xhrG.response.count / 2),
+			1
+		);
+
+		pagination.on('move', number => {
+
+			urlUsersSearch.searchParams.set('offset', 2 * (number - 1));
+			pagination.page = number;
+			initUsers('[data-root="listRoot"]');
+		});
 	};
 
 	xhrG.responseType = 'json';
 	xhrG.send();
 }
 
-initUsers();
 
-const getRandomAge = () => Math.round(10 + (Math.random() * 70));
-
-function initUsers() {
+function initUsers(dRoot) {
 	const xhrG = new XMLHttpRequest();
+	const root = document.querySelector(dRoot);
 
-	xhrG.open('GET', urlUsers);
+	xhrG.open('GET', urlUsersSearch);
 
-	if (!document.querySelector('ul')) {
+	if (!root.querySelector('ul')) {
 		const ul = document.createElement('ul');
-		document.body.append(ul);
+		root.append(ul);
 	
 		xhrG.onload = () => {
 			const users = xhrG.response;
@@ -43,7 +62,7 @@ function initUsers() {
 			}
 		};
 	} else {
-		const allLi = document.querySelectorAll('ul > li');
+		const allLi = root.querySelectorAll('ul > li');
 
 		for (const li of allLi) {
 			li.remove();
@@ -56,7 +75,7 @@ function initUsers() {
 				const li = document.createElement('li');
 			
 				li.textContent = user.name;
-				document.querySelector('ul').append(li);
+				root.querySelector('ul').append(li);
 			}
 		};
 	}
@@ -83,7 +102,7 @@ add.addEventListener('click', async () => {
 
 		inp.value = '';
 	
-		await initUsers();
+		await initUsers('[data-root="listRoot"]');
 	}
 });
 
@@ -99,12 +118,12 @@ del.addEventListener('click', async () => {
 
 		inp.value = '';
 	
-		await initUsers();
+		await initUsers('[data-root="listRoot"]');
 	}
 });
 
 edit.addEventListener('click', async () => {
-	const inp = document.querySelector('input[data-value="edit"]');
+	const inp = document.querySelector('input[data-value="editId"]');
 	if (inp.value) {
 		const urlP = `${urlUsers}/${inp.value}`;
 		const edit = document.querySelectorAll('input[data-value="edit"]');
@@ -130,6 +149,6 @@ edit.addEventListener('click', async () => {
 			item.value = '';
 		}
 	
-		await initUsers();
+		await initUsers('[data-root="listRoot"]');
 	}
 });
