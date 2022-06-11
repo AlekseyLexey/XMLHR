@@ -3,30 +3,30 @@ import Pagination from "./Classes/Pagination.js";
 const add = document.querySelector('button[data-action="add"]');
 const del = document.querySelector('button[data-action="delete"]');
 const edit = document.querySelector('button[data-action="edit"]');
-const urlUsers = new URL('http://localHost:3000/users');
-
-const urlUsersSearch = new URL('http://localHost:3000/users');
-urlUsersSearch.searchParams.set('limit', 2);
 
 const getRandomAge = () => Math.round(10 + (Math.random() * 70));
 
-initUsers('[data-root="listRoot"]');
+const xhr = new XMLHttpRequest();
+const urlUsers = new URL('http://localHost:3000/users');
+const urlUsersSearch = new URL('http://localHost:3000/users');
+const urlUsersCount = new URL('http://localHost:3000/usersCount');
+urlUsersSearch.searchParams.set('limit', 2);
+urlUsersSearch.searchParams.set('offset', 0);
+
+const pagination = new Pagination(
+	document.querySelector('[data-root="paginationRoot"]'),
+);
+
 getUsersCount();
 
 function getUsersCount() {
-	const xhrG = new XMLHttpRequest();
+	xhr.open('GET', urlUsersCount);
 
-	const urlUsersCount = new URL('http://localHost:3000/usersCount');
+	xhr.onload = () => {
+		pagination.page = 1;
+		pagination.pages = Math.ceil(xhr.response.count / 2);
 
-	xhrG.open('GET', urlUsersCount);
-
-	xhrG.onload = () => {
-
-		const pagination = new Pagination(
-			document.querySelector('[data-root="paginationRoot"]'),
-			Math.ceil(xhrG.response.count / 2),
-			1
-		);
+		initUsers('[data-root="listRoot"]');
 
 		pagination.on('move', number => {
 
@@ -36,23 +36,22 @@ function getUsersCount() {
 		});
 	};
 
-	xhrG.responseType = 'json';
-	xhrG.send();
+	xhr.responseType = 'json';
+	xhr.send();
 }
 
-
 function initUsers(dRoot) {
-	const xhrG = new XMLHttpRequest();
 	const root = document.querySelector(dRoot);
 
-	xhrG.open('GET', urlUsersSearch);
+	xhr.open('GET', urlUsersSearch);
 
-	if (!root.querySelector('ul')) {
-		const ul = document.createElement('ul');
-		root.append(ul);
-	
-		xhrG.onload = () => {
-			const users = xhrG.response;
+	xhr.onload = () => {
+		console.log('fired');
+		if (!root.querySelector('ul')) {
+			const ul = document.createElement('ul');
+			root.append(ul);
+		
+			const users = xhr.response;
 	
 			for (const user of users) {
 				const li = document.createElement('li');
@@ -60,16 +59,14 @@ function initUsers(dRoot) {
 				li.textContent = user.name;
 				ul.append(li);
 			}
-		};
-	} else {
-		const allLi = root.querySelectorAll('ul > li');
+		} else {
+			const allLi = root.querySelectorAll('ul > li');
+	
+			for (const li of allLi) {
+				li.remove();
+			}
 
-		for (const li of allLi) {
-			li.remove();
-		}
-
-		xhrG.onload = () => {
-			const users = xhrG.response;
+			const users = xhr.response;
 	
 			for (const user of users) {
 				const li = document.createElement('li');
@@ -77,23 +74,38 @@ function initUsers(dRoot) {
 				li.textContent = user.name;
 				root.querySelector('ul').append(li);
 			}
-		};
-	}
+		}
+	};
 
-	xhrG.responseType = 'json';
-	xhrG.send();
+	xhr.responseType = 'json';
+	xhr.send();
 }
 
+function setPaginationCount() {
+	xhr.open('GET', urlUsersCount);
+
+	xhr.onload = () => {
+		pagination.pages = Math.ceil(xhr.response.count / 2);
+		pagination.page = Math.min(pagination.page, pagination.pages)
+	}
+
+	xhr.responseType = 'json';
+	xhr.send();
+}
 
 add.addEventListener('click', async () => {
 	const inp = document.querySelector('input[data-value="name"]');
 	if (inp.value) {
-		const xhrAdd = new XMLHttpRequest();
 
-		xhrAdd.open('POST', urlUsers);
-		xhrAdd.setRequestHeader('Content-Type', 'application/json; charset = utf-8');
+		xhr.open('POST', urlUsers);
+		xhr.setRequestHeader('Content-Type', 'application/json;charset=utf-8');
+
+		console.log(JSON.stringify({
+			name: `${inp.value}`,
+			age: `${getRandomAge()}`
+		}));
 	
-		await xhrAdd.send(
+		xhr.send(
 			JSON.stringify({
 				name: `${inp.value}`,
 				age: `${getRandomAge()}`
@@ -102,7 +114,9 @@ add.addEventListener('click', async () => {
 
 		inp.value = '';
 	
-		await initUsers('[data-root="listRoot"]');
+		initUsers('[data-root="listRoot"]');
+
+		setPaginationCount();
 	}
 });
 
@@ -110,15 +124,16 @@ del.addEventListener('click', async () => {
 	const inp = document.querySelector('input[data-value="id"]');
 	if (inp.value) {
 		const urlD = `${urlUsers}/${inp.value}`;
-		const xhrAdd = new XMLHttpRequest();
 
-		xhrAdd.open('DELETE', urlD);
+		xhr.open('DELETE', urlD);
 	
-		await xhrAdd.send();
+		xhr.send();
 
 		inp.value = '';
-	
-		await initUsers('[data-root="listRoot"]');
+
+		initUsers('[data-root="listRoot"]');
+
+		setPaginationCount();
 	}
 });
 
@@ -134,12 +149,11 @@ edit.addEventListener('click', async () => {
 				editUser[item.name] = item.value;
 			}
 		}
-		const xhrAdd = new XMLHttpRequest();
 
-		xhrAdd.open('PATCH', urlP);
-		xhrAdd.setRequestHeader('Content-Type', 'application/json; charset = utf-8');
+		xhr.open('PATCH', urlP);
+		xhr.setRequestHeader('Content-Type', 'application/json;charset=utf-8');
 	
-		await xhrAdd.send(
+		xhr.send(
 			JSON.stringify(editUser)
 		);
 
@@ -149,6 +163,6 @@ edit.addEventListener('click', async () => {
 			item.value = '';
 		}
 	
-		await initUsers('[data-root="listRoot"]');
+		initUsers('[data-root="listRoot"]');
 	}
 });
